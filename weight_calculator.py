@@ -82,6 +82,64 @@ def relu_derivative(z):
     return (z > 0).astype(float)
 
 
+def generate_linearly_separable_data(n_samples=200, n_features=2, random_seed=42):
+    """
+    Generate a linearly separable binary classification dataset.
+    
+    Creates two clusters that can be separated by a linear decision boundary.
+    
+    Parameters:
+    -----------
+    n_samples : int, optional
+        Total number of samples to generate (default: 200)
+    n_features : int, optional
+        Number of features per sample (default: 2)
+    random_seed : int, optional
+        Random seed for reproducibility (default: 42)
+    
+    Returns:
+    --------
+    dict
+        Dictionary containing:
+        - "X": feature matrix (n_samples x n_features)
+        - "y": binary labels (0 or 1)
+        - "dataset_type": name of dataset
+        - "n_samples": number of samples
+        - "n_features": number of features
+        - "n_classes": number of classes (2)
+    """
+    
+    np.random.seed(random_seed)
+    
+    n_samples_per_class = n_samples // 2
+    
+    # Class 0: centered at origin with negative offset
+    X_class_0 = np.random.randn(n_samples_per_class, n_features) - 2
+    y_class_0 = np.zeros(n_samples_per_class, dtype=int)
+    
+    # Class 1: centered away from origin with positive offset
+    X_class_1 = np.random.randn(n_samples_per_class, n_features) + 2
+    y_class_1 = np.ones(n_samples_per_class, dtype=int)
+    
+    # Combine and shuffle
+    X = np.vstack([X_class_0, X_class_1])
+    y = np.hstack([y_class_0, y_class_1])
+    
+    # Shuffle
+    shuffle_idx = np.random.permutation(n_samples)
+    X = X[shuffle_idx]
+    y = y[shuffle_idx]
+    
+    return {
+        "X": X,
+        "y": y,
+        "dataset_type": "Linearly Separable",
+        "n_samples": len(X),
+        "n_features": n_features,
+        "n_classes": 2
+    }
+
+
 def calculate_weights_random(dataset, activation='sigmoid', random_seed=42):
     """
     Calculate weights using random initialization with variance scaling.
@@ -457,7 +515,7 @@ def calculate_weights_numerical_gradient(dataset, activation='sigmoid', max_iter
         initial_params,
         method='L-BFGS-B',
         jac=gradient_function,
-        options={'maxiter': max_iterations, 'disp': True}
+        options={'maxiter': max_iterations, 'disp': False}
     )
     
     # Extract weights and bias
@@ -465,7 +523,7 @@ def calculate_weights_numerical_gradient(dataset, activation='sigmoid', max_iter
     bias = result.x[n_features]
     final_loss = loss_function(result.x)
     
-    print("\nOptimization Results:")
+    print("Optimization Results:")
     print("  - Success: {}".format(result.success))
     print("  - Final Loss: {:.6f}".format(final_loss))
     print("  - Iterations: {}".format(result.nit))
@@ -659,10 +717,8 @@ def main():
     print("#" + " " * 68 + "#")
     print("#" * 70)
     
-    # Create a simple dataset for demonstration
-    from synthetic_data_generator import generate_linearly_separable_data
-    
     print("\n\nGenerating dataset for weight calculation...")
+    # Use built-in function instead of importing
     dataset = generate_linearly_separable_data(n_samples=100, n_features=3, random_seed=42)
     
     # Example 1: Single method with Sigmoid
